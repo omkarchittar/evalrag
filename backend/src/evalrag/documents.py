@@ -1,10 +1,13 @@
 """Bounded parsers for the supported upload formats."""
 
-from io import BytesIO
+import json
+import subprocess
+import sys
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from pathlib import PurePath
+from time import monotonic
 
-from pypdf import PdfReader
-from pypdf.errors import PdfReadError
+import psutil
 
 
 class DocumentError(ValueError):
@@ -31,26 +34,53 @@ def extract_pages(
         if not data.startswith(b"%PDF-"):
             raise DocumentError("File does not contain a valid PDF header")
         try:
-            reader = PdfReader(BytesIO(data), strict=True)
-            if reader.is_encrypted:
-                raise DocumentError("Encrypted PDFs are not supported")
-            if len(reader.pages) > max_pages:
-                raise DocumentError("PDF exceeds the page limit")
-            pages = []
-            length = 0
-            for number, page in enumerate(reader.pages, start=1):
-                content_stream = page.get_contents()
-                if content_stream and len(content_stream.get_data()) > 10_000_000:
-                    raise DocumentError("PDF page exceeds the decompressed content limit")
-                text = page.extract_text() or ""
-                length += len(text)
-                if length > max_characters:
-                    raise DocumentError("Document exceeds the extracted text limit")
-                pages.append((number, text))
-        except (PdfReadError, ValueError, KeyError, RecursionError) as exc:
-            if isinstance(exc, DocumentError):
-                raise
-            raise DocumentError("PDF could not be parsed") from exc
+            with (
+                subprocess.Popen(
+                    [
+                        sys.executable,
+                        "-m",
+                        "evalrag.pdf_worker",
+                        str(max_pages),
+                        str(max_characters),
+                    ],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                ) as process,
+                ThreadPoolExecutor(max_workers=1) as executor,
+            ):
+                output_future = executor.submit(process.communicate, data)
+                deadline = monotonic() + 10
+                monitor = psutil.Process(process.pid)
+                try:
+                    while True:
+                        try:
+                            stdout, _ = output_future.result(timeout=0.02)
+                            break
+                        except TimeoutError:
+                            if monotonic() >= deadline:
+                                raise DocumentError(
+                                    "PDF could not be parsed within resource limits"
+                                ) from None
+                            try:
+                                if monitor.memory_info().rss > 512 * 1024 * 1024:
+                                    raise DocumentError(
+                                        "PDF could not be parsed within resource limits"
+                                    ) from None
+                            except psutil.NoSuchProcess:
+                                continue
+                finally:
+                    if process.poll() is None:
+                        process.kill()
+                    output_future.result(timeout=2)
+            if process.returncode != 0:
+                raise DocumentError("PDF could not be parsed within resource limits") from None
+            output = json.loads(stdout)
+            if "error" in output:
+                raise DocumentError(output["error"])
+            pages = [(page, text) for page, text in output["pages"]]
+        except (subprocess.TimeoutExpired, json.JSONDecodeError, KeyError) as exc:
+            raise DocumentError("PDF could not be parsed within resource limits") from exc
     else:
         try:
             text = data.decode("utf-8-sig")

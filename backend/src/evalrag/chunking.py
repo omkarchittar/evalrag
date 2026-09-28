@@ -21,13 +21,22 @@ class TextChunk:
 
 
 def chunk_pages(
-    pages: list[tuple[int, str]], *, size: int = 400, overlap: int = 60, strategy: str = "recursive"
+    pages: list[tuple[int, str]],
+    *,
+    size: int = 400,
+    overlap: int = 60,
+    strategy: str = "recursive",
+    max_chunks: int = 2000,
+    max_total_tokens: int = 250000,
 ) -> list[TextChunk]:
     if not 8 <= size <= 8192 or not 0 <= overlap < size:
         raise ValueError("Chunk size must be 8–8192 tokens and overlap in [0, size)")
     if strategy not in {"fixed", "recursive"}:
         raise ValueError("Unknown chunking strategy")
+    if max_chunks < 1 or max_total_tokens < 1:
+        raise ValueError("Chunk and token budgets must be positive")
     encoding = tokenizer()
+    total_tokens = 0
     result = []
     for page, text in pages:
         tokens = encoding.encode(text, disallowed_special=())
@@ -68,6 +77,9 @@ def chunk_pages(
             content = content.strip()
             if content:
                 count = len(encoding.encode(content, disallowed_special=()))
+                total_tokens += count
+                if len(result) >= max_chunks or total_tokens > max_total_tokens:
+                    raise ValueError("Document exceeds the indexing budget")
                 result.append(TextChunk(content, page, len(result), count))
             if end == len(tokens):
                 break

@@ -128,3 +128,8 @@ def test_citation_validation_rejects_unknown_and_fabricated_evidence():
     result = validate_citations(citations, sources)
     assert [r["valid"] for r in result] == [True, False, False]
     assert [r["reason"] for r in result] == [None, "unknown_source", "quote_not_found"]
+
+
+def test_extreme_overlap_cannot_amplify_ingestion_without_bound():
+    with pytest.raises(ValueError, match="budget"):
+        chunk_pages([(1, "word " * 1000)], size=128, overlap=127, max_total_tokens=2000)

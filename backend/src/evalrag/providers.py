@@ -74,6 +74,8 @@ class OpenAIEmbeddingProvider:
             )
         try:
             data = response.json()
+            if data.get("model") != self.model:
+                raise ValueError("Embedding model mismatch")
             entries = sorted(data["data"], key=lambda item: item["index"])
             if [entry["index"] for entry in entries] != list(range(len(texts))):
                 raise ValueError("Invalid embedding indices")
