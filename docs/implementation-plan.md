@@ -55,7 +55,8 @@ adding intermediate approval gates. Record actual test results here, not intenti
 ### 5. Frontend and operational delivery
 
 - [x] Research console, persisted API integration, production browser journeys and screenshots.
-- [ ] Actual container/deployment verification, live-provider measurements, release pipeline and demo GIF.
+- [x] Local Linux/arm64 container verification, release workflow definitions and demo GIF.
+- [ ] Live-provider measurements, remote publishing and public deployment verification.
 - [ ] Deliverable: `frontend/, Dockerfile, compose.yaml, .github/workflows/`.
 - [ ] Behavior evidence: Browser journey for ingestion/query/evaluation/comparison; responsive accessible UI; CI and builds pass; screenshots and GIF reflect real runtime.
 - [ ] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
@@ -130,3 +131,33 @@ adding intermediate approval gates. Record actual test results here, not intenti
 - Browser fixtures used a disposable database, separately launched API/worker and controlled HTTP provider. Temporary databases/processes were cleaned up; zero temporary browser databases remain. Fixture metrics are not live provider quality results.
 - Added non-root standalone frontend image, Compose console service/configuration, CI browser/image jobs, native/HTTPS deployment documentation and five screenshots with fixture provenance. YAML definitions parse; Docker execution remains unverified because no Docker runtime is available. ESLint is pinned to the Next-compatible 9.x release used by the existing console stack; npm reports its upstream support warning.
 - Remaining: live-provider benchmark measurements and failure analysis, actual container/deployment verification, published release workflow and demo GIF. No remote push or deployment performed. The overall goal remains active.
+
+
+### Demo, release and container checkpoint — 2026-09-28
+
+- Recorded a real product journey against the production Next.js frontend, API, worker
+  and disposable PostgreSQL; committed the GIF, recording script and regeneration guide.
+  Accounts/documents are fictional and the HTTP model provider is explicitly controlled.
+  The recording is integration evidence, not a live-model quality measurement.
+- Added tag-triggered GHCR publishing gated by the complete reusable CI workflow, pinned
+  publishing actions, minimal job permissions, amd64/arm64 build targets, provenance/SBOM
+  output, version/SHA tags and digest-based Compose deployment instructions. No tag was
+  pushed and no registry publication or public deployment has been performed.
+- Source review approved both media/release increments with no findings. All six action
+  pins resolve; actionlint, Compose base/release configuration validation, frontend lint,
+  TypeScript, Prettier and the recording journey pass.
+- Built both Dockerfiles locally and started isolated Compose services with fresh database
+  volumes. Alembic exited successfully; API/database readiness passed. Backend and console
+  runtime images use nonroot users. **All 7 browser journeys passed (24.0s)** against
+  the actual containerized app, separate worker and database on **Linux/arm64**, using the
+  existing controlled provider fixture in a separate private-network container.
+- The temporary verification override changed host ports, fixture provider settings and
+  seeded fictional accounts; it retained the built product images and migrations. The
+  initial EvalRAG container attempt exposed an incorrect fixture mount path, corrected
+  before a fresh database rerun. No product code change was needed.
+- Removed the disposable Compose projects/volumes and temporary runner configuration.
+  Existing native PostgreSQL and the user's Podman VM were not modified. Local native
+  test results from earlier checkpoints remain separate from this container verification.
+- Remaining: measured live-provider benchmark reports with failure analysis, remote CI/
+  registry evidence, public deployment and final PRD acceptance audit. No real-provider
+  API credentials or deployment target have been supplied. Full release scope remains open.

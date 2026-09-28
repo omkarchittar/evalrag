@@ -1,5 +1,6 @@
 name: Quality and images
 on:
+  workflow_call:
   pull_request:
   push:
     branches: [main]

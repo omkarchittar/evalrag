@@ -1,0 +1,10 @@
+# Combine with compose.yaml and use --no-build. Set digest-pinned image references.
+services:
+  migrate:
+    image: ${EVALRAG_API_IMAGE:?Set EVALRAG_API_IMAGE to the published api image digest}
+  api:
+    image: ${EVALRAG_API_IMAGE:?Set EVALRAG_API_IMAGE to the published api image digest}
+  worker:
+    image: ${EVALRAG_API_IMAGE:?Set EVALRAG_API_IMAGE to the published api image digest}
+  frontend:
+    image: ${EVALRAG_CONSOLE_IMAGE:?Set EVALRAG_CONSOLE_IMAGE to the published console image digest}

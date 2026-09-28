@@ -31,12 +31,18 @@ Provider quality measurements and a verified deployed release remain outstanding
 Current local verification: **185 backend tests against PostgreSQL 17 and 7 production-build browser journeys pass**.
 Lint, TypeScript, formatting and schema checks pass. Browser checks include responsive layout, axe accessibility,
 version conflicts, permissions, source inspection, semantic-run wiring and comparison coverage.
-These controlled-provider results are not live AI quality measurements. Docker image execution and live-model benchmarks remain unverified.
+These controlled-provider results are not live AI quality measurements. The same seven browser journeys also pass against the Linux/arm64 Docker Compose stack. Live-model benchmarks and remote publication remain unverified.
 
 ![EvalRAG research dashboard](docs/screenshots/dashboard.png)
 
 [Playground and source evidence](docs/screenshots/playground.png) · [Evaluation results](docs/screenshots/evaluation.png) · [Comparison](docs/screenshots/comparison.png) · [Mobile](docs/screenshots/mobile.png).
 Screenshots use fictional data and a controlled provider; see [provenance](docs/screenshots/README.md).
+
+## Product walkthrough
+
+![Recorded EvalRAG walkthrough](docs/demo.gif)
+
+Fictional evidence and a controlled local model fixture. This demonstrates application behavior, not live AI quality. [Recording provenance and regeneration](docs/demo.md).
 
 ## Architecture
 
@@ -141,4 +147,4 @@ adapter contracts. They are not fabricated live model quality results.
 
 ## Remaining release work
 
-Measured live-provider benchmark runs with failure analysis; actual Docker runtime and deployment verification; published release pipeline and demo GIF. The [implementation plan](docs/implementation-plan.md) records completed checkpoints and the remaining PRD scope.
+Measured live-provider benchmark runs with failure analysis; remote image publishing and public deployment. Local Linux/arm64 Docker runtime verification passes all seven browser journeys. The [implementation plan](docs/implementation-plan.md) records completed checkpoints and the remaining PRD scope.

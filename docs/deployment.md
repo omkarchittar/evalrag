@@ -1,6 +1,6 @@
 # Deployment and operations
 
-The supplied Compose definition runs PostgreSQL/pgvector, a one-shot Alembic migration, FastAPI, a separate durable worker and the Next.js console. Container definitions and CI jobs are provided; local Docker execution remains unverified until a Docker runtime is available. Native browser verification uses the actual production Next build and separate backend processes.
+The supplied Compose definition runs PostgreSQL/pgvector, a one-shot Alembic migration, FastAPI, a separate durable worker and the Next.js console. Both images build and all seven browser journeys pass against the local Linux/arm64 Compose stack, including migrations, the separate worker and containerized PostgreSQL/pgvector. The model endpoint uses controlled fictional fixtures; this verifies packaging and service integration. Live-provider measurements, amd64 execution, remote image publication and public HTTPS deployment remain unverified.
 
 ## Local startup
 
@@ -33,6 +33,25 @@ Monitor `/health/ready`, request latency/error metrics, failed jobs, evaluation 
 
 ## Build and release checks
 
-GitHub Actions runs backend lint/tests/schema/migration checks against PostgreSQL 17 with pgvector, frontend lint/type/format checks and real browser journeys against a production build, then compiles both images. Image jobs do not push or deploy. A published release and a tested deployment remain separate acceptance work; the current workflow must not be described as a verified production deployment.
+GitHub Actions runs backend lint/tests/schema/migration checks against PostgreSQL 17 with pgvector, frontend lint/type/format checks and real browser journeys against a production build, then compiles both images. CI image jobs only compile images. The separate tag-triggered workflow below publishes after the complete quality gate. Local container verification has passed; remote publication and public HTTPS deployment still require execution evidence.
 
 Browser artifact fixtures are fictional. Screenshots demonstrate product wiring and UI behavior, not measured live AI quality. Use the benchmark CLI and retain the resulting reports for real provider measurements.
+
+## Versioned image publishing
+
+The `Publish verified images` workflow starts on a pushed `v*` tag. It calls the complete quality workflow for that exact tagged commit before publishing API and console images to GHCR. API and worker use the same image. Publishing has package-write permission only in the publishing job; pull-request CI remains read-only. Actions in the publishing job are commit-pinned. Images include source/revision metadata, BuildKit provenance and SBOMs, and are built for Linux amd64/arm64. No mutable `latest` tag is created.
+
+The workflow uses GitHub's documented [reusable workflow](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [container publishing](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images) mechanisms. The definitions have been locally checked; successful remote publishing still needs execution evidence.
+
+After a successful tag run, copy each image digest from its job summary into the deployment secret/environment configuration:
+
+```sh
+export EVALRAG_API_IMAGE='ghcr.io/OWNER/evalrag-api@sha256:API_DIGEST'
+export EVALRAG_CONSOLE_IMAGE='ghcr.io/OWNER/evalrag-console@sha256:CONSOLE_DIGEST'
+docker compose -f compose.yaml -f compose.release.yaml pull
+docker compose -f compose.yaml -f compose.release.yaml up --no-build -d
+```
+
+The release override intentionally keeps the same migrations, health checks, environment, volumes and worker wiring as local Compose. Set actual digest values; the placeholders above are documentation, not runnable image references. Tag names can be moved by repository writers, so deploy by digest and protect release tags in repository settings. For rollback, retain the previous digest pair and confirm schema compatibility before replacing services. If a matrix publication fails after one image is pushed, do not deploy that partial release; require the whole workflow to succeed.
+
+Public HTTPS infrastructure and deployment credentials are environment-specific and are not provisioned by image publication. A registry upload is not evidence of a running deployment.
