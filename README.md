@@ -2,12 +2,13 @@
 
 A RAG engineering workbench for grounded answers, reproducible experiments and regression analysis.
 
-**Status: grounded queries, durable evaluations and benchmark tooling implemented; frontend/release work in progress.**
-The product APIs are usable through OpenAPI or an API client. The frontend and measured live-model
-benchmark/release package are still in progress.
+**Status: backend and research console implemented; live benchmark and release verification in progress.**
+The console connects indexed documents, grounded query traces, versioned datasets and immutable experiments.
+Provider quality measurements and a verified deployed release remain outstanding.
 
 ## Implemented and verified
 
+- Responsive Next.js research console: workspaces, document/chunk inspection, configurable playground, source citations, tool traces, datasets, evaluations and comparison gates.
 - Cookie sessions with CSRF protection, hashed API tokens, database-backed login throttling and administrative account management.
 - Workspace-scoped knowledge-base APIs with owner/editor/viewer permissions and attachment downloads.
 - Separate ingestion worker with heartbeat, crash recovery, atomic indexing and actual embedding usage.
@@ -27,9 +28,15 @@ benchmark/release package are still in progress.
 - FastAPI liveness/readiness, structured request logs, correlation IDs and Prometheus metrics.
 - Alembic migrations, reproducible dependency locks, non-root Dockerfile and backend CI definition.
 
-Current local verification: **185 tests pass against PostgreSQL 17**. This count includes unit, HTTP and database tests; it is not a claim that
-the final PRD benchmark/scenario requirements have been completed. Live provider calls
-and Docker image builds have not yet been verified in this environment.
+Current local verification: **185 backend tests against PostgreSQL 17 and 7 production-build browser journeys pass**.
+Lint, TypeScript, formatting and schema checks pass. Browser checks include responsive layout, axe accessibility,
+version conflicts, permissions, source inspection, semantic-run wiring and comparison coverage.
+These controlled-provider results are not live AI quality measurements. Docker image execution and live-model benchmarks remain unverified.
+
+![EvalRAG research dashboard](docs/screenshots/dashboard.png)
+
+[Playground and source evidence](docs/screenshots/playground.png) · [Evaluation results](docs/screenshots/evaluation.png) · [Comparison](docs/screenshots/comparison.png) · [Mobile](docs/screenshots/mobile.png).
+Screenshots use fictional data and a controlled provider; see [provenance](docs/screenshots/README.md).
 
 ## Architecture
 
@@ -38,7 +45,7 @@ relational invariants and security/reliability design. The [source PRD](docs/PRD
 is preserved from the supplied Word document. The [implementation plan](docs/implementation-plan.md)
 tracks the complete scope and evidence.
 
-## Run the current backend with Docker
+## Run with Docker
 
 Requires Docker Compose. From the repository root:
 
@@ -48,13 +55,15 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open `http://localhost:8000/docs` for the current API schema.
+Bootstrap an administrator with the command below, then open `http://localhost:3000` for the console.
+`http://localhost:8000/docs` exposes the API schema for local development.
 `/health/live` checks the process; `/health/ready` checks the database and migration
 version table; `/metrics` exports request counts and latency histograms. Ports bind
 only to localhost. Keep `/metrics` internal behind the deployment gateway.
 
 Compose starts PostgreSQL, runs the migrations as a separate one-shot service and
-then starts the API and a separate durable worker. The frontend is not yet included.
+then starts the API, a separate durable worker and the Next.js console.
+See [deployment and operations](docs/deployment.md) for HTTPS, secrets, proxy and rollout configuration.
 
 ## Native development
 
@@ -73,6 +82,17 @@ export EVALRAG_DATABASE_URL='postgresql+psycopg://USER:PASSWORD@localhost:5432/e
 
 Secrets belong in environment variables or a git-ignored `backend/.env` for native
 runs. Never commit API keys, encryption keys or real business documents.
+
+Start the console in another terminal (Node.js 24):
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+The default API upstream is `http://127.0.0.1:8000`; the browser uses same-origin `/api` routes.
+See the [frontend guide](frontend/README.md) for production builds and browser checks.
 
 ## Accounts and worker configuration
 
@@ -119,10 +139,6 @@ checks migration downgrade/upgrade and Docker image compilation.
 Test fixture provider responses are controlled HTTP responses used to exercise
 adapter contracts. They are not fabricated live model quality results.
 
-## Next milestones
+## Remaining release work
 
-Next.js frontend; browser tests; measured live-provider benchmark runs; release pipeline; screenshots and demo GIF.
-
-The final release will include measured benchmarks, an interactive frontend,
-architecture/state diagrams, screenshots, a demo GIF, deployment instructions and
-an explanation of failure cases and design decisions.
+Measured live-provider benchmark runs with failure analysis; actual Docker runtime and deployment verification; published release pipeline and demo GIF. The [implementation plan](docs/implementation-plan.md) records completed checkpoints and the remaining PRD scope.

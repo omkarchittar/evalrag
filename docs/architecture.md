@@ -80,3 +80,11 @@ image publishing configuration and deployment runbook. Test real PostgreSQL vect
 search, transactions and constraints in addition to fast domain tests. Browser tests
 cover ingest → query → citations → evaluate → compare. README contains measured
 benchmark results, architecture, setup, design tradeoffs, screenshots and demo GIF.
+
+## Research console
+
+The Next.js App Router console proxies `/api` to the internal API through build-time rewrites. It uses same-origin HttpOnly sessions and an in-memory CSRF token; no provider secrets or bearer credentials enter browser storage. Reads are abortable, keyed by resource path, and sequentially polled where work progresses asynchronously. User changes remount protected state; workspace membership controls visible editing actions and backend authorization remains authoritative.
+
+The playground renders model text as escaped content, attaches exact source quotes to claim citations, and exposes retrieved chunks, tool receipts and saved provider usage. Quote validation is labeled separately from semantic support. Costs can be unknown; incomplete usage is explicitly partial. Dataset saves adopt the API’s returned version immediately, and failed or conflicting reloads preserve local edits. Evaluation submissions reuse an idempotency key for identical retries and comparisons retain the backend’s coverage-aware pass/regression/inconclusive outcome.
+
+Production browser tests start disposable PostgreSQL, separate API/worker processes and a controlled provider. Their screenshots and measured transport timings demonstrate integration behavior only. Live-model quality and a deployed release require separate measurements.

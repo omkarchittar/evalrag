@@ -26,6 +26,10 @@ services:
     build: ./backend
     environment: &backend_environment
       EVALRAG_DATABASE_URL: postgresql+psycopg://evalrag:${POSTGRES_PASSWORD}@db:5432/evalrag
+      EVALRAG_ENVIRONMENT: ${EVALRAG_ENVIRONMENT:-development}
+      EVALRAG_ALLOWED_ORIGINS: ${EVALRAG_ALLOWED_ORIGINS:-["http://localhost:3000"]}
+      EVALRAG_UPLOAD_LIMIT_BYTES: ${EVALRAG_UPLOAD_LIMIT_BYTES:-10000000}
+      EVALRAG_OPENAI_BASE_URL: ${EVALRAG_OPENAI_BASE_URL:-https://api.openai.com/v1}
       EVALRAG_OPENAI_API_KEY: ${EVALRAG_OPENAI_API_KEY:-}
       EVALRAG_GENERATION_MODEL: ${EVALRAG_GENERATION_MODEL:-gpt-4.1-mini}
       EVALRAG_ADDITIONAL_GENERATION_MODELS: ${EVALRAG_ADDITIONAL_GENERATION_MODELS:-[]}
@@ -48,5 +52,16 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        EVALRAG_API_URL: http://api:8000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 volumes:
   db_data:

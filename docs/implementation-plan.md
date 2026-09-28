@@ -54,6 +54,8 @@ adding intermediate approval gates. Record actual test results here, not intenti
 
 ### 5. Frontend and operational delivery
 
+- [x] Research console, persisted API integration, production browser journeys and screenshots.
+- [ ] Actual container/deployment verification, live-provider measurements, release pipeline and demo GIF.
 - [ ] Deliverable: `frontend/, Dockerfile, compose.yaml, .github/workflows/`.
 - [ ] Behavior evidence: Browser journey for ingestion/query/evaluation/comparison; responsive accessible UI; CI and builds pass; screenshots and GIF reflect real runtime.
 - [ ] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
@@ -117,3 +119,14 @@ adding intermediate approval gates. Record actual test results here, not intenti
 - Full suite: **185 passing tests**, with real PostgreSQL and no skips. Ruff lint/format and Alembic schema check pass; full downgrade to base and upgrade to head succeed.
 - Native HTTP smoke used a temporary real database, separately launched API/worker and controlled local provider. Repeated CLI seeding reused resources; 16 documents indexed across small/large configurations; two 60-case semantic evaluations completed; all 120 results and traces exported; unknown custom-provider pricing produced an inconclusive gate. Temporary processes/database/reports removed afterward. This verifies runtime wiring, not live-model accuracy.
 - Remaining: complete frontend/browser journeys, live-provider measurements and failure analysis, Docker execution, release/deployment/docs/screenshots/GIF. No remote push or deployment performed. Goal remains active.
+
+
+### Research console checkpoint — 2026-09-28
+
+- Implemented responsive Next.js console for authentication/account administration, workspace memberships/dashboard, embedding/chunk configuration, uploads/indexing, paginated documents/chunks, grounded queries, source quotes, saved history and tool/usage traces.
+- Added versioned case authoring, conflict handling, dataset export, idempotent evaluation controls, asynchronous progress/results, per-case inspection, immutable configuration records and coverage-aware comparisons. Missing metrics remain unmeasured; unknown cost and incomplete provider usage stay explicit.
+- Independent review reproduced and resolved incorrect upload-index field naming, dataset refresh races, incomplete token labeling, stale self-demotion controls, form pagination submission and a clean-checkout asset-directory issue. Browser testing also caught nullable queued-run metrics, mobile landmarks and footer contrast. Final re-review approved with no outstanding findings.
+- Verified **185 backend tests** against real PostgreSQL 17 with no skips, Ruff lint/format and Alembic schema check. Verified production Next build, ESLint, TypeScript and Prettier. **7 Chromium browser journeys pass**, including axe checks, responsive navigation, actual pgvector ingestion/query, source inspection, agent tools/provider failure, two semantic evaluation runs, version conflict/save/reload preservation, unknown-cost comparison, RBAC/session revocation and account provisioning.
+- Browser fixtures used a disposable database, separately launched API/worker and controlled HTTP provider. Temporary databases/processes were cleaned up; zero temporary browser databases remain. Fixture metrics are not live provider quality results.
+- Added non-root standalone frontend image, Compose console service/configuration, CI browser/image jobs, native/HTTPS deployment documentation and five screenshots with fixture provenance. YAML definitions parse; Docker execution remains unverified because no Docker runtime is available. ESLint is pinned to the Next-compatible 9.x release used by the existing console stack; npm reports its upstream support warning.
+- Remaining: live-provider benchmark measurements and failure analysis, actual container/deployment verification, published release workflow and demo GIF. No remote push or deployment performed. The overall goal remains active.
