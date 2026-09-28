@@ -33,10 +33,10 @@ adding intermediate approval gates. Record actual test results here, not intenti
 
 ### 2. Ingestion and vector indexing
 
-- [ ] Deliverable: `ingestion.py, providers.py, worker.py`.
-- [ ] Behavior evidence: PDF/TXT/Markdown parsing preserves provenance; token overlap terminates; duplicate ingestion reuses the record; actual pgvector ranking returns expected chunks.
-- [ ] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
-- [ ] Commit the verified increment and record evidence below.
+- [x] Deliverable: `ingestion.py, providers.py, worker.py`.
+- [x] Behavior evidence: PDF/TXT/Markdown parsing preserves provenance; token overlap terminates; duplicate ingestion reuses the record; actual pgvector ranking returns expected chunks.
+- [x] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
+- [x] Commit the verified increment and record evidence below.
 
 ### 3. Grounded query and tools
 
@@ -80,3 +80,15 @@ adding intermediate approval gates. Record actual test results here, not intenti
 - Final suite for this checkpoint: **79 passing tests** with PostgreSQL, with no skipped tests.
 - Real Uvicorn readiness and Prometheus endpoints returned successful responses; smoke-test servers were stopped afterward.
 - Current status: foundation complete, broader product implementation remains active. No remote push or release deployment has been performed.
+
+### Authenticated API and durable-worker checkpoint — 2026-09-28
+
+- Cookie/Bearer authentication, CSRF, persisted login throttles, bootstrap CLI and account administration implemented. Password validation errors omit input values.
+- Scoped workspace/member/knowledge-base/document APIs, downloads, chunk views and persisted overview added.
+- Ingestion runs in a separately launched worker. Provider IO releases database transactions; final indexing and job completion are atomic and fenced by the lease. Usage is actual provider-reported embedding tokens.
+- Queue recovery marks exhausted/failed documents explicitly. Supported upload-size configuration propagates through PDF parsing and indexing; PDF memory/CPU/decoded-content limits remain independent.
+- Full suite: **103 passing tests**, no skips, with PostgreSQL 17. Ruff lint/format and Alembic schema check pass. Full downgrade to base and upgrade to head pass on the isolated test database.
+- Native Uvicorn smoke test in a temporary database verifies CLI bootstrap, real HTTP authentication, persisted product mutation, separate-worker missing-key failure handling, and session revocation. Temporary processes and database removed afterward.
+- Independent review found three concrete issues across the increment (blank evidence quotes, bootstrap validation secret exposure, PDF upload-size mismatch). Regression tests reproduced all three; fixes approved on re-review with no outstanding findings.
+- Compose now starts the worker and shares backend configuration. FlowPilot dependency locks include psutil. YAML and environment references validated, but actual Docker builds/startup remain unverified because Docker is unavailable.
+- These test totals are not live provider quality metrics or the final PRD benchmark corpus. Frontend, complete benchmark artifacts and release presentation remain outstanding. No remote push or deployment performed.

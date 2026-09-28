@@ -22,6 +22,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from evalrag.api import router as product_router
+from evalrag.auth import router as auth_router
+from evalrag.body_limit import BodyLimit
 from evalrag.config import Settings
 from evalrag.db import Database
 
@@ -57,8 +60,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.allowed_origins,
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE"],
-        allow_headers=["Authorization", "Content-Type", "X-Request-ID", "Idempotency-Key"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+        allow_headers=[
+            "Authorization",
+            "Content-Type",
+            "X-Request-ID",
+            "Idempotency-Key",
+            "X-CSRF-Token",
+        ],
         expose_headers=["X-Request-ID"],
     )
 
@@ -143,4 +152,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def metrics():
         return Response(generate_latest(registry), media_type=CONTENT_TYPE_LATEST)
 
+    app.add_middleware(BodyLimit, max_bytes=settings.upload_limit_bytes + 1_000_000)
+    app.include_router(auth_router)
+    app.include_router(product_router)
     return app

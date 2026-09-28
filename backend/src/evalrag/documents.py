@@ -42,6 +42,7 @@ def extract_pages(
                         "evalrag.pdf_worker",
                         str(max_pages),
                         str(max_characters),
+                        str(max_bytes),
                     ],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,

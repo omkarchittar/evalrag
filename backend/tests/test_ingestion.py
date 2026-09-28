@@ -141,7 +141,7 @@ def test_ingestion_persists_chunks_and_replay_is_idempotent(db):
     assert document.ingestion_ms >= 0
 
 
-def make_pdf(text="Policy retention is 30 days.", pages=1, encrypted=False):
+def make_pdf(text="Policy retention is 30 days.", pages=1, encrypted=False, padding=0):
     from io import BytesIO
 
     from pypdf import PdfWriter
@@ -163,6 +163,8 @@ def make_pdf(text="Policy retention is 30 days.", pages=1, encrypted=False):
         stream = DecodedStreamObject()
         stream.set_data(f"BT /F1 12 Tf 72 720 Td ({text}) Tj ET".encode())
         page[NameObject("/Contents")] = writer._add_object(stream)
+    if padding:
+        writer.add_metadata({"/Padding": "x" * padding})
     if encrypted:
         writer.encrypt("test-secret")
     output = BytesIO()

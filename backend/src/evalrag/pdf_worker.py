@@ -82,8 +82,9 @@ def main():
         resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
     try:
-        data = sys.stdin.buffer.read(10_000_001)
-        if len(data) > 10_000_000:
+        max_bytes = min(int(sys.argv[3]), 50_000_000)
+        data = sys.stdin.buffer.read(max_bytes + 1)
+        if len(data) > max_bytes:
             raise PdfLimit("PDF exceeds the file size limit")
         pages = parse_pdf(data, max_pages=int(sys.argv[1]), max_characters=int(sys.argv[2]))
         output = {"pages": pages}

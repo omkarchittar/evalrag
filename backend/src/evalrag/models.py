@@ -118,6 +118,7 @@ class Document(Identity, Base):
     content: Mapped[bytes] = mapped_column(LargeBinary)
     status: Mapped[str] = mapped_column(String(20), default="queued", index=True)
     error_code: Mapped[str | None] = mapped_column(String(80))
+    embedding_tokens: Mapped[int] = mapped_column(Integer, default=0)
     ingestion_ms: Mapped[int | None] = mapped_column(Integer)
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
     indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -234,3 +235,11 @@ class EvaluationResult(Identity, Base):
     trace_id: Mapped[str] = mapped_column(ForeignKey("query_traces.id"))
     metrics: Mapped[dict] = mapped_column(JSONB)
     __table_args__ = (UniqueConstraint("run_id", "case_id"),)
+
+
+class LoginThrottle(Base):
+    __tablename__ = "login_throttles"
+    subject_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    attempts: Mapped[int] = mapped_column(Integer)
+    window_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    __table_args__ = (CheckConstraint("attempts > 0", name="positive_attempts"),)
