@@ -38,6 +38,37 @@ These controlled-provider results are not live AI quality measurements. The same
 [Playground and source evidence](docs/screenshots/playground.png) · [Evaluation results](docs/screenshots/evaluation.png) · [Comparison](docs/screenshots/comparison.png) · [Mobile](docs/screenshots/mobile.png).
 Screenshots use fictional data and a controlled provider; see [provenance](docs/screenshots/README.md).
 
+## Evaluation evidence
+
+The authored benchmark contains **60 questions across eight fictional policy documents**:
+48 policy questions, six calculator cases and six unanswerable/adversarial cases.
+Two index configurations are ready for comparison: small embeddings with top-k 5 and
+large embeddings with top-k 3. See [commands and metric definitions](benchmarks/README.md).
+
+| Evidence | Current result |
+| --- | --- |
+| Ground-truth corpus and cases | 8 documents, 60 labeled questions; checksummed manifest |
+| Saved configurations and comparison contracts | PostgreSQL tests and browser journey pass |
+| Live retrieval precision/recall, citation support and unsupported claims | Not measured yet |
+| Live p50/p95 latency, tokens and estimated cost | Not measured yet |
+| Baseline/candidate regression decision | Awaiting completed live runs with adequate coverage |
+
+This is a readiness table, not a measured AI benchmark. Publishing the two real run
+reports and inspecting their failures remains a release gate.
+
+## Engineering decisions and limits
+
+PostgreSQL owns both vector retrieval and the leased work queue, keeping durable work
+and experiment records in one transactional system. Runs snapshot cases, configuration
+and corpus identity; resumption rejects changed inputs instead of mixing experiments.
+Quote validation is deterministic, while semantic support is a separate model estimate.
+Unknown usage or cost stays unknown and can make a regression gate inconclusive.
+
+The first release supports dense retrieval, two OpenAI embedding models and two prompt
+versions. Hybrid search and reranking are optional future work. Scanned PDFs require OCR
+outside this service. [Failure analysis](docs/failure-analysis.md) explains tested failure
+modes and the evidence still needed from real model runs.
+
 ## Product walkthrough
 
 ![Recorded EvalRAG walkthrough](docs/demo.gif)
@@ -46,10 +77,23 @@ Fictional evidence and a controlled local model fixture. This demonstrates appli
 
 ## Architecture
 
+```mermaid
+flowchart LR
+  UI[Next.js console] --> API[FastAPI / authenticated API]
+  API --> DB[(Postgres + pgvector)]
+  API --> Jobs[Persisted jobs]
+  Jobs --> Worker[Ingestion and evaluation worker]
+  Worker --> Providers[Embedding / generation adapters]
+  Worker --> DB
+  API --> RAG[Retriever / grounded answer / safe tools]
+  RAG --> Providers
+  RAG --> DB
+```
+
 See [architecture and tradeoffs](docs/architecture.md) for the component diagram,
 relational invariants and security/reliability design. The [source PRD](docs/PRD.md)
 is preserved from the supplied Word document. The [implementation plan](docs/implementation-plan.md)
-tracks the complete scope and evidence.
+tracks the complete scope and evidence. The [acceptance audit](docs/acceptance.md) maps each required capability to implementation and verification, with open release gates kept explicit.
 
 ## Run with Docker
 
