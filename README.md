@@ -1,5 +1,7 @@
 # EvalRAG
 
+[![CI](https://github.com/omkarchittar/evalrag/actions/workflows/ci.yml/badge.svg)](https://github.com/omkarchittar/evalrag/actions/workflows/ci.yml)
+
 A RAG engineering workbench for grounded answers, reproducible experiments and regression analysis.
 
 **Status: backend and research console implemented; live benchmark and release verification in progress.**
@@ -31,7 +33,7 @@ Provider quality measurements and a verified deployed release remain outstanding
 Current local verification: **185 backend tests against PostgreSQL 17 and 7 production-build browser journeys pass**.
 Lint, TypeScript, formatting and schema checks pass. Browser checks include responsive layout, axe accessibility,
 version conflicts, permissions, source inspection, semantic-run wiring and comparison coverage.
-These controlled-provider results are not live AI quality measurements. The same seven browser journeys also pass against the Linux/arm64 Docker Compose stack. Live-model benchmarks and remote publication remain unverified.
+These controlled-provider results are not live AI quality measurements. The same seven browser journeys also pass against the Linux/arm64 Docker Compose stack. Live-model benchmark measurements and public deployment remain open.
 
 ![EvalRAG research dashboard](docs/screenshots/dashboard.png)
 
@@ -189,6 +191,8 @@ checks migration downgrade/upgrade and Docker image compilation.
 Test fixture provider responses are controlled HTTP responses used to exercise
 adapter contracts. They are not fabricated live model quality results.
 
+See [published source and CI evidence](docs/release-verification.md).
+
 ## Remaining release work
 
-Measured live-provider benchmark runs with failure analysis; remote image publishing and public deployment. Local Linux/arm64 Docker runtime verification passes all seven browser journeys. The [implementation plan](docs/implementation-plan.md) records completed checkpoints and the remaining PRD scope.
+Measured live-provider benchmark runs with failure analysis and public deployment remain open. Source, remote CI and the `v0.1.0-rc.1` images are published and verified. Local Linux/arm64 Docker runtime verification passes all seven browser journeys. The [implementation plan](docs/implementation-plan.md) records completed checkpoints and the remaining PRD scope.

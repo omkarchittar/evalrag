@@ -1,0 +1,72 @@
+{
+  "verified_at": "2026-09-28T08:41:37.207669+00:00",
+  "verification": "Anonymous registry reads; SHA-256 checked index, platform manifest, image config and SBOM/provenance statement blobs. Source/revision labels and nonroot user checked. This is not a deployed runtime check.",
+  "images": [
+    {
+      "image": "ghcr.io/omkarchittar/evalrag-api",
+      "tag": "v0.1.0-rc.1",
+      "digest": "sha256:09490bcbf390fcad945418fe682628da7b25e9f97f1b338cf6199ac2861b2fba",
+      "source_commit": "18ebfce941b96d00a878e9cf4f77b38d445c0f37",
+      "anonymous_registry_read_verified": true,
+      "platforms": [
+        {
+          "platform": "linux/amd64",
+          "manifest_digest": "sha256:cab7a6986082c8acb12ece735aba7e28582733cce22e4d4263d04cbf999a66dc",
+          "runtime_user": "app",
+          "attestations": [
+            "https://spdx.dev/Document",
+            "https://slsa.dev/provenance/v1"
+          ]
+        },
+        {
+          "platform": "linux/arm64",
+          "manifest_digest": "sha256:ba52b1e066ef2a4e6c51cf7d37de574b8e91494170da55823052d03b6f05281e",
+          "runtime_user": "app",
+          "attestations": [
+            "https://spdx.dev/Document",
+            "https://slsa.dev/provenance/v1"
+          ]
+        }
+      ]
+    },
+    {
+      "image": "ghcr.io/omkarchittar/evalrag-console",
+      "tag": "v0.1.0-rc.1",
+      "digest": "sha256:1fa63ea9df09c56698cef9dfd9b9e0e6ea8a1428eca7d8634e005745373949ee",
+      "source_commit": "18ebfce941b96d00a878e9cf4f77b38d445c0f37",
+      "anonymous_registry_read_verified": true,
+      "platforms": [
+        {
+          "platform": "linux/amd64",
+          "manifest_digest": "sha256:9e7ef5af444e3eebf0b6972749ca2d5b88b035a01e9559a5eda27600a49429b8",
+          "runtime_user": "node",
+          "attestations": [
+            "https://spdx.dev/Document",
+            "https://slsa.dev/provenance/v1"
+          ]
+        },
+        {
+          "platform": "linux/arm64",
+          "manifest_digest": "sha256:e3a4927db869cb4b5c929512496b14072db41930658575165cebee1ca5c6cf44",
+          "runtime_user": "node",
+          "attestations": [
+            "https://spdx.dev/Document",
+            "https://slsa.dev/provenance/v1"
+          ]
+        }
+      ]
+    }
+  ],
+  "workflow_run": "https://github.com/omkarchittar/evalrag/actions/runs/36397853294",
+  "runtime_verification": {
+    "verified_at": "2026-09-28T08:47:23.905220+00:00",
+    "platform": "linux/arm64",
+    "deployment": "Disposable local Compose stack using compose.release.yaml and exact published digests",
+    "browser_journeys_passed": 7,
+    "browser_suite_seconds": 24.2,
+    "provider": "Controlled HTTP fixture; not live-model measurement",
+    "migrations": "Passed",
+    "api_health": "Passed",
+    "public_deployment": false
+  }
+}

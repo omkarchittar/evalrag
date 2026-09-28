@@ -1,6 +1,6 @@
 # Deployment and operations
 
-The supplied Compose definition runs PostgreSQL/pgvector, a one-shot Alembic migration, FastAPI, a separate durable worker and the Next.js console. Both images build and all seven browser journeys pass against the local Linux/arm64 Compose stack, including migrations, the separate worker and containerized PostgreSQL/pgvector. The model endpoint uses controlled fictional fixtures; this verifies packaging and service integration. Live-provider measurements, amd64 execution, remote image publication and public HTTPS deployment remain unverified.
+The supplied Compose definition runs PostgreSQL/pgvector, a one-shot Alembic migration, FastAPI, a separate durable worker and the Next.js console. Both images build and all seven browser journeys pass against the local Linux/arm64 Compose stack, including migrations, the separate worker and containerized PostgreSQL/pgvector. The model endpoint uses controlled fictional fixtures; this verifies packaging and service integration. Live-provider measurements, amd64 runtime execution and public HTTPS deployment remain unverified. [Remote CI and amd64/arm64 image publication](release-verification.md) passed.
 
 ## Local startup
 
@@ -33,7 +33,7 @@ Monitor `/health/ready`, request latency/error metrics, failed jobs, evaluation 
 
 ## Build and release checks
 
-GitHub Actions runs backend lint/tests/schema/migration checks against PostgreSQL 17 with pgvector, frontend lint/type/format checks and real browser journeys against a production build, then compiles both images. CI image jobs only compile images. The separate tag-triggered workflow below publishes after the complete quality gate. Local container verification has passed; remote publication and public HTTPS deployment still require execution evidence.
+GitHub Actions runs backend lint/tests/schema/migration checks against PostgreSQL 17 with pgvector, frontend lint/type/format checks and real browser journeys against a production build, then compiles both images. CI image jobs only compile images. The separate tag-triggered workflow below publishes after the complete quality gate. Local container verification and remote publication have passed; public HTTPS deployment still requires execution evidence.
 
 Browser artifact fixtures are fictional. Screenshots demonstrate product wiring and UI behavior, not measured live AI quality. Use the benchmark CLI and retain the resulting reports for real provider measurements.
 
@@ -41,7 +41,12 @@ Browser artifact fixtures are fictional. Screenshots demonstrate product wiring 
 
 The `Publish verified images` workflow starts on a pushed `v*` tag. It calls the complete quality workflow for that exact tagged commit before publishing API and console images to GHCR. API and worker use the same image. Publishing has package-write permission only in the publishing job; pull-request CI remains read-only. Actions in the publishing job are commit-pinned. Images include source/revision metadata, BuildKit provenance and SBOMs, and are built for Linux amd64/arm64. No mutable `latest` tag is created.
 
-The workflow uses GitHub's documented [reusable workflow](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [container publishing](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images) mechanisms. The definitions have been locally checked; successful remote publishing still needs execution evidence.
+The workflow uses GitHub's documented [reusable workflow](https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows) and [container publishing](https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images) mechanisms. The first release-candidate run succeeded; [publication evidence and image digests](release-verification.md) are recorded separately from deployment evidence.
+
+The verified release-candidate images allow anonymous pulls. For private packages, authenticate on the deployment
+host with a classic token that has `read:packages` and access to the package, supplied through
+`docker login ghcr.io --username YOUR-USER --password-stdin`. Keep registry credentials in the
+host's secret store. Public packages allow anonymous pulls. See [GitHub registry authentication](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry).
 
 After a successful tag run, copy each image digest from its job summary into the deployment secret/environment configuration:
 

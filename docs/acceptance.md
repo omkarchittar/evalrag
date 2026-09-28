@@ -42,7 +42,7 @@ cannot establish real-model quality, production reliability or public deployment
   prove amd64 runtime, real provider behavior, load capacity or public HTTPS deployment.
 - [CI](../.github/workflows/ci.yml) runs on every pull request and main push, checks schema
   roundtrips and builds both images. [Release](../.github/workflows/release.yml) calls all CI
-  gates before publishing versioned images. Remote execution evidence is still open.
+  gates before publishing versioned images. [Remote CI and image publication](release-verification.md) passed for the audited source commit.
 
 ## Success criteria and final gates
 
@@ -54,8 +54,9 @@ cannot establish real-model quality, production reliability or public deployment
 | p95 latency and estimated cost | Persisted run metrics and comparison view; missing coverage tested | Implemented; live operational table open |
 | README diagram, screenshots, demo GIF | Embedded README diagrams and images; [recording provenance](demo.md) | Present |
 | README benchmark table and failure analysis | Readiness table, [method](../benchmarks/README.md), [failure analysis](failure-analysis.md) | Measured benchmark table open; do not substitute fixture scores |
-| Deployment and portfolio launch | Local container execution and deployment runbook | Public deployment, remote CI/image publication and final release open |
+| Deployment and portfolio launch | Local container execution and deployment runbook | Remote CI/image publication verified; public deployment and final release open |
 
 Required next evidence: configured provider credentials; two complete live benchmark runs
-with provenance, coverage and inspected failures; successful remote CI and image publication;
-chosen hosting target and a verified deployed journey. No final completion claim is justified yet.
+with provenance, coverage and inspected failures; chosen hosting target and a verified deployed journey. No final completion claim is justified yet.
+
+The [release evidence](release-verification.md) additionally records anonymous registry verification and all 7 browser journeys passing against the exact published Linux/arm64 image digests. Public deployment and live-model measurements remain open.
