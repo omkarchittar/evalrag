@@ -27,6 +27,7 @@ from evalrag.auth import router as auth_router
 from evalrag.body_limit import BodyLimit
 from evalrag.config import Settings
 from evalrag.db import Database
+from evalrag.evaluation_api import router as evaluation_router
 from evalrag.query_api import router as query_router
 
 logger = logging.getLogger("evalrag.requests")
@@ -157,4 +158,5 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(auth_router)
     app.include_router(product_router)
     app.include_router(query_router)
+    app.include_router(evaluation_router)
     return app

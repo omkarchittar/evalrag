@@ -47,10 +47,10 @@ adding intermediate approval gates. Record actual test results here, not intenti
 
 ### 4. Evaluation and regression
 
-- [ ] Deliverable: `evaluation.py, benchmarks/`.
-- [ ] Behavior evidence: 50–100 cases with references; immutable run snapshots; known precision/recall/rank metrics; failed cases affect error rate; comparable run regression gates.
-- [ ] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
-- [ ] Commit the verified increment and record evidence below.
+- [x] Deliverable: `evaluation.py, benchmarks/`.
+- [x] Behavior evidence: 50–100 cases with references; immutable run snapshots; known precision/recall/rank metrics; failed cases affect error rate; comparable run regression gates.
+- [x] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
+- [x] Commit the verified increment and record evidence below.
 
 ### 5. Frontend and operational delivery
 
@@ -104,3 +104,16 @@ adding intermediate approval gates. Record actual test results here, not intenti
 - Final suite for this increment: **159 tests passing**, no skipped PostgreSQL tests; Ruff and schema checks pass.
 - Native HTTP smoke with a controlled local provider verifies upload → separate worker → real pgvector → calculator loop → cited query → persisted history. This proves runtime wiring, not live model accuracy. Temporary database/server/provider removed afterward.
 - Next: dataset management, immutable evaluation snapshots/execution, semantic evaluation, regression comparisons and benchmark corpus; then full frontend and release requirements. No release or remote push yet.
+
+
+### Evaluation and benchmark checkpoint — 2026-09-28
+
+- Versioned dataset management, portable export and idempotent evaluation submission implemented. Runs snapshot cases, dataset revision, query/index settings, exact corpus/vector digests and evaluator/prompt/provider identity.
+- Separate worker resumes missing cases after interruption, fences every result by its lease and atomically completes aggregated observations. Changed evidence/protocol and revoked access fail explicitly; later uploads cannot enter the saved corpus.
+- Metrics distinguish deterministic source/quote checks from model-estimated support. Actual evaluator embeddings supply similarity; judge claims/citations must align with observed output. Missing scores remain null with coverage; failed cases remain in operational rates.
+- Comparisons require matching logical corpus/dataset and evaluator protocol. They flag quality/latency/cost regressions and refuse passing gates on incomplete cost coverage, reduced quality coverage or evaluator errors.
+- Added eight original fictional policies and **60 authored benchmark cases**, including calculator/metadata, unsupported questions and adversarial text. CLI validates checksums/labels, seeds both embedding configurations, schedules experiments and exports actual persisted results/traces/comparisons.
+- Independent review found lost cost coverage, stale locked dataset version and unrecorded provider changes. Regression tests reproduce/fix all three. Benchmark review caught an invalid config key and missing dataset guard; both fixed and tested. Re-review approved with no outstanding findings.
+- Full suite: **185 passing tests**, with real PostgreSQL and no skips. Ruff lint/format and Alembic schema check pass; full downgrade to base and upgrade to head succeed.
+- Native HTTP smoke used a temporary real database, separately launched API/worker and controlled local provider. Repeated CLI seeding reused resources; 16 documents indexed across small/large configurations; two 60-case semantic evaluations completed; all 120 results and traces exported; unknown custom-provider pricing produced an inconclusive gate. Temporary processes/database/reports removed afterward. This verifies runtime wiring, not live-model accuracy.
+- Remaining: complete frontend/browser journeys, live-provider measurements and failure analysis, Docker execution, release/deployment/docs/screenshots/GIF. No remote push or deployment performed. Goal remains active.

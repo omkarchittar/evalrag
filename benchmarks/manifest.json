@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "filename": "retention.md",
+      "sha256": "3026aa55588ae6f626bbffdbc11aca9d3c3fe81371e8f3f6a5f8e0e52da4d6b9"
+    },
+    {
+      "filename": "access.md",
+      "sha256": "8d287cf23a6669854369786ae8bd596029525d9089c13eb5e58760c24042a4e6"
+    },
+    {
+      "filename": "incidents.md",
+      "sha256": "5814258bea7b6f0e3286402563cd42aab5ba95bc4c7b27b2c45483f1fcd0d2db"
+    },
+    {
+      "filename": "vendors.md",
+      "sha256": "64b1ffeb48b5b72dc409bdb500d4148dde0cb07940fd6af1b0a270a31646c0b3"
+    },
+    {
+      "filename": "support.md",
+      "sha256": "c4808e5f7d88f6cd460bc5883c732b0411d3e6a21049adbda1467d91a6e8e1a6"
+    },
+    {
+      "filename": "delivery.md",
+      "sha256": "eec8a8106fe1377c248abaa8af5e58fcb3dcf92f5f26ae3bdf9ec71975b1ccc9"
+    },
+    {
+      "filename": "billing.md",
+      "sha256": "6ecf3d36262c9ac2789018609866edb4e00479a5ed97e4e2faae7ddde0af1176"
+    },
+    {
+      "filename": "availability.md",
+      "sha256": "a6daac10ee0e6c12c5931513dab34d546c0a5f15f81cf1f76d54821440c2411b"
+    }
+  ],
+  "cases": 60,
+  "label_origin": "authored",
+  "contains_live_results": false
+}

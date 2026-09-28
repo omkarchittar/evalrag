@@ -8,13 +8,16 @@ import threading
 from contextlib import contextmanager
 
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 
 from evalrag.config import Settings
-from evalrag.db import Database
+from evalrag.db import Database, utcnow
+from evalrag.evaluation_worker import process_evaluation
 from evalrag.ingestion import build_index, commit_index, index_input
 from evalrag.jobs import LeaseLost, assert_owned, claim, complete, fail, heartbeat
-from evalrag.models import Document, Job
+from evalrag.models import Document, EvaluationRun, Job
 from evalrag.providers import OpenAIEmbeddingProvider, ProviderError
+from evalrag.runtime import QueryProviders
 
 logger = logging.getLogger("evalrag.worker")
 
@@ -58,15 +61,39 @@ def reconcile_failures(database):
         for document, code in rows:
             document.status = "failed"
             document.error_code = code or "worker_failed"
+        runs = db.execute(
+            select(EvaluationRun, Job.last_error_code)
+            .join(Job, Job.resource_id == EvaluationRun.id)
+            .where(
+                Job.kind == "evaluate_run",
+                Job.status == "failed",
+                EvaluationRun.status.in_(["queued", "running"]),
+            )
+            .with_for_update(of=EvaluationRun, skip_locked=True)
+            .limit(100)
+        ).all()
+        for run, code in runs:
+            run.status = "failed"
+            run.error_code = code or "worker_failed"
+            run.completed_at = utcnow()
 
 
-def run_once(database: Database, settings: Settings, *, embedding_factory=None) -> bool:
+def run_once(
+    database: Database, settings: Settings, *, embedding_factory=None, query_providers=None
+) -> bool:
     with database.transaction() as db:
         lease = claim(db)
     reconcile_failures(database)
     if lease is None:
         return False
     try:
+        if lease.kind == "evaluate_run":
+            with keep_lease(database, lease):
+                process_evaluation(database, lease, query_providers or QueryProviders(settings))
+            logger.info(
+                json.dumps({"event": "job_completed", "job_id": lease.id, "kind": lease.kind})
+            )
+            return True
         if lease.kind != "ingest_document":
             raise ValueError("Unsupported job kind")
         with database.transaction() as db:
@@ -107,14 +134,24 @@ def run_once(database: Database, settings: Settings, *, embedding_factory=None) 
             if isinstance(exc, ValueError)
             else "worker_failed"
         )
-        retryable = isinstance(exc, ProviderError) and exc.retryable
+        retryable = (isinstance(exc, ProviderError) and exc.retryable) or isinstance(
+            exc, OperationalError
+        )
         try:
             with database.transaction() as db:
                 status = fail(db, lease, code=code, retryable=retryable)
-                row = db.get(Document, lease.resource_id)
-                if row and row.status != "ready":
-                    row.status = status
-                    row.error_code = code
+                if lease.kind == "evaluate_run":
+                    row = db.get(EvaluationRun, lease.resource_id)
+                    if row and row.status not in {"completed", "failed"}:
+                        row.status = status
+                        row.error_code = code
+                        if status == "failed":
+                            row.completed_at = utcnow()
+                else:
+                    row = db.get(Document, lease.resource_id)
+                    if row and row.status != "ready":
+                        row.status = status
+                        row.error_code = code
         except LeaseLost:
             logger.warning(json.dumps({"event": "lease_lost", "job_id": lease.id}))
         logger.warning(

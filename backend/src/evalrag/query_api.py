@@ -8,10 +8,9 @@ from sqlalchemy import func, select
 
 from evalrag.api import knowledge_base
 from evalrag.auth import Actor, Db, Input
-from evalrag.generation import OpenAIGenerationProvider
 from evalrag.models import QueryTrace
-from evalrag.providers import OpenAIEmbeddingProvider
 from evalrag.rag import QueryAccessError, QueryConfig, ask
+from evalrag.runtime import QueryProviders
 
 router = APIRouter(prefix="/api", tags=["queries"])
 
@@ -19,33 +18,6 @@ router = APIRouter(prefix="/api", tags=["queries"])
 class QueryInput(Input):
     question: str = Field(min_length=1, max_length=4000)
     config: QueryConfig | None = None
-
-
-class QueryProviders:
-    def __init__(self, settings):
-        self.settings = settings
-        self.standard_openai = settings.openai_base_url.rstrip("/") == "https://api.openai.com/v1"
-
-    def key(self):
-        value = self.settings.openai_api_key
-        return value.get_secret_value() if value else ""
-
-    def embedding(self, index):
-        return OpenAIEmbeddingProvider(
-            self.key(),
-            model=index.embedding_model,
-            dimensions=index.embedding_dimension,
-            base_url=self.settings.openai_base_url,
-            timeout=self.settings.provider_timeout_seconds,
-        )
-
-    def generation(self, model):
-        return OpenAIGenerationProvider(
-            self.key(),
-            model=model,
-            base_url=self.settings.openai_base_url,
-            timeout=self.settings.provider_timeout_seconds,
-        )
 
 
 def get_query_database(request: Request):

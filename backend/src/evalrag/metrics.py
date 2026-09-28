@@ -88,6 +88,8 @@ HIGHER_IS_BETTER = {
     "groundedness",
     "answer_relevance",
     "tool_accuracy",
+    "abstention_accuracy",
+    "quote_correctness",
 }
 
 
@@ -98,7 +100,7 @@ def compare_metrics(
     quality_tolerance: float = 0.05,
     operational_tolerance: float = 0.2,
 ) -> list[dict]:
-    if quality_tolerance < 0 or operational_tolerance < 0:
+    if any(not math.isfinite(v) or v < 0 for v in [quality_tolerance, operational_tolerance]):
         raise ValueError("Regression tolerances cannot be negative")
     results = []
     for metric in sorted(

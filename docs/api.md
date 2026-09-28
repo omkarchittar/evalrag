@@ -1,8 +1,7 @@
 # Current backend API
 
 The OpenAPI schema at `/docs` is the authoritative request/response reference.
-This guide covers implemented ingestion and grounded-query behavior. Evaluation
-dataset/run endpoints are the next increment.
+This guide covers implemented ingestion, grounded queries and durable evaluations.
 
 ## Authentication and access
 
@@ -110,3 +109,42 @@ Provider calls release DB transactions. Authorization is checked again for retri
 metadata and final persistence; revocation during a query prevents returning its answer.
 Only configured provider adapters run in the product. Automated test fixtures simulate
 provider responses for contract testing and are not a live-model quality benchmark.
+
+## Datasets, evaluations and regression gates
+
+Create datasets at `POST /api/workspaces/{id}/datasets` with a name. `GET /api/datasets/{id}`
+returns a version and cases. Replace the complete case list using `PUT /api/datasets/{id}/cases`
+with `{"version": CURRENT_VERSION, "cases": [...]}`. A stale version returns 409; successful edits
+increment it. Cases support question, reference answer, SHA-256 document checksums in `expected_sources`,
+optional `expected_abstention`, expected tool, tags and notes. See OpenAPI for limits (200 cases/run).
+`GET /api/datasets/{id}/export` returns portable labels without internal case IDs. Owners and editors
+can edit and schedule experiments; viewers can inspect results.
+
+Queue a run with `POST /api/workspaces/{id}/evaluation-runs` and a unique `Idempotency-Key` header:
+
+```json
+{
+  "dataset_id": "DATASET_ID",
+  "knowledge_base_id": "KNOWLEDGE_BASE_ID",
+  "name": "Baseline / top 5",
+  "query": {"top_k": 5, "prompt_version": "grounded-v1", "agent_mode": true},
+  "evaluate_semantics": true
+}
+```
+
+The worker processes `queued` → `running` → `completed` or `failed`. Read status/configuration/input
+snapshots at `GET /api/evaluation-runs/{id}` and page case observations at `/results`. Every result
+links to its complete immutable query trace. Reads and writes remain scoped to workspace membership.
+Runs preserve dataset revision, original cases, corpus/index digests, query/prompt settings, evaluator
+protocol and an opaque provider fingerprint. Current access and input identity are rechecked before
+execution and completion. Retries resume unfinished cases; exhausted jobs become explicitly failed.
+
+`GET /api/evaluation-runs/{candidate_id}/compare/{baseline_id}` requires completed runs sharing the
+same logical dataset/corpus and evaluation protocol. It reports per-metric deltas, regression flags,
+quality/cost coverage, thresholds and a three-way outcome: pass, regression, or inconclusive. Lost
+scores, reduced quality coverage, incomplete cost coverage or evaluator failures prevent a passing
+gate. Query/embedding/prompt configurations can differ; evaluator protocol must remain consistent.
+Quality tolerances are absolute (default 0.05); latency/cost tolerances are relative (default 0.2).
+
+See [benchmark commands and metric definitions](../benchmarks/README.md). The bundle contains authored
+labels; no live-provider accuracy claims are inferred from its existence or from contract tests.

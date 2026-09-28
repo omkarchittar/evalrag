@@ -93,7 +93,7 @@ class Completion:
     input_tokens: int
     output_tokens: int
     cached_tokens: int
-    answer: GroundedAnswer | None
+    answer: BaseModel | None
     tool_calls: list[ToolCall]
 
     def assistant_message(self):
@@ -128,7 +128,14 @@ class OpenAIGenerationProvider:
         self.api_key, self.model = api_key, model
         self.base_url, self.timeout, self.client = base_url.rstrip("/"), timeout, client
 
-    def complete(self, messages: list[dict], *, tools: bool) -> Completion:
+    def complete(
+        self,
+        messages: list[dict],
+        *,
+        tools: bool,
+        response_schema: type[BaseModel] = GroundedAnswer,
+        schema_name: str = "grounded_answer",
+    ) -> Completion:
         if len(json.dumps(messages)) > 1_000_000:
             raise ProviderError("context_budget_exceeded")
         payload = {
@@ -138,9 +145,9 @@ class OpenAIGenerationProvider:
             "response_format": {
                 "type": "json_schema",
                 "json_schema": {
-                    "name": "grounded_answer",
+                    "name": schema_name,
                     "strict": True,
-                    "schema": GroundedAnswer.model_json_schema(),
+                    "schema": response_schema.model_json_schema(),
                 },
             },
         }
@@ -216,7 +223,7 @@ class OpenAIGenerationProvider:
             elif choice["finish_reason"] == "stop":
                 if message.get("tool_calls"):
                     raise ValueError("Unexpected tool payload")
-                answer = GroundedAnswer.model_validate_json(message["content"])
+                answer = response_schema.model_validate_json(message["content"])
             else:
                 raise ProviderError("incomplete_generation")
         except ProviderError as exc:

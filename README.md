@@ -2,8 +2,8 @@
 
 A RAG engineering workbench for grounded answers, reproducible experiments and regression analysis.
 
-**Status: authenticated backend and durable workers implemented; product development in progress.**
-The product APIs are usable through OpenAPI or an API client. The frontend and complete
+**Status: grounded queries, durable evaluations and benchmark tooling implemented; frontend/release work in progress.**
+The product APIs are usable through OpenAPI or an API client. The frontend and measured live-model
 benchmark/release package are still in progress.
 
 ## Implemented and verified
@@ -18,13 +18,16 @@ benchmark/release package are still in progress.
 - Grounded query API with pgvector retrieval, structured cited claims, explicit abstention and immutable query history.
 - Bounded agent loop with document search, arithmetic and scoped metadata lookup; per-call receipts and cumulative context limits.
 - Actual model/token/latency observations with versioned, source-linked cost estimates and explicit unknown-usage handling.
-- Retrieval metrics, operational percentiles and directional regression comparisons.
+- Versioned dataset APIs, fixed experiment snapshots and resumable evaluation jobs with per-case traces.
+- Actual embedding similarity and separately estimated semantic support, with evaluator usage and protocol provenance.
+- Retrieval metrics, operational percentiles and coverage-aware regression gates.
+- [60-case authored benchmark](benchmarks/README.md), two embedding configurations and API-based import/run/report/compare commands.
 - Database-enforced immutability of experiment inputs and completed observations.
 - PostgreSQL job queue with SKIP LOCKED claims, expiring leases, backoff and stale-worker fencing.
 - FastAPI liveness/readiness, structured request logs, correlation IDs and Prometheus metrics.
 - Alembic migrations, reproducible dependency locks, non-root Dockerfile and backend CI definition.
 
-Current local verification: **159 tests pass against PostgreSQL 17**. This count includes unit, HTTP and database tests; it is not a claim that
+Current local verification: **185 tests pass against PostgreSQL 17**. This count includes unit, HTTP and database tests; it is not a claim that
 the final PRD benchmark/scenario requirements have been completed. Live provider calls
 and Docker image builds have not yet been verified in this environment.
 
@@ -118,7 +121,7 @@ adapter contracts. They are not fabricated live model quality results.
 
 ## Next milestones
 
-Dataset management and immutable evaluation execution; benchmark corpus; Next.js frontend; browser tests; release pipeline; screenshots and demo GIF.
+Next.js frontend; browser tests; measured live-provider benchmark runs; release pipeline; screenshots and demo GIF.
 
 The final release will include measured benchmarks, an interactive frontend,
 architecture/state diagrams, screenshots, a demo GIF, deployment instructions and

@@ -193,6 +193,7 @@ class EvaluationCase(Identity, Base):
     dataset_id: Mapped[str] = mapped_column(ForeignKey("evaluation_datasets.id"), index=True)
     question: Mapped[str] = mapped_column(Text)
     expected_answer: Mapped[str | None] = mapped_column(Text)
+    expected_abstention: Mapped[bool | None] = mapped_column(Boolean)
     expected_sources: Mapped[list] = mapped_column(JSONB, default=list)
     expected_tool: Mapped[str | None] = mapped_column(String(60))
     tags: Mapped[list] = mapped_column(JSONB, default=list)
