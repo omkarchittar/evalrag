@@ -1,8 +1,8 @@
 # Current backend API
 
 The OpenAPI schema at `/docs` is the authoritative request/response reference.
-This guide covers implemented behavior; grounded queries and evaluation endpoints
-are the next increment.
+This guide covers implemented ingestion and grounded-query behavior. Evaluation
+dataset/run endpoints are the next increment.
 
 ## Authentication and access
 
@@ -63,3 +63,50 @@ multipart parsing; normal application errors include a correlated request ID.
 
 The current suite verifies contracts with controlled provider responses. Live model
 quality, production load and Docker execution require separate release validation.
+
+## Grounded queries and trace inspection
+
+`POST /api/knowledge-bases/{id}/queries` accepts a question and optional configuration:
+
+```json
+{
+  "question": "What is the retention period?",
+  "config": {
+    "top_k": 5,
+    "minimum_score": 0,
+    "prompt_version": "grounded-v1",
+    "agent_mode": false
+  }
+}
+```
+
+Omitted model settings use the deployment's `EVALRAG_GENERATION_MODEL`. Additional
+models must be explicitly listed in `EVALRAG_ADDITIONAL_GENERATION_MODELS` (JSON array).
+`GET /api/query-options` reports available models, prompts and limits. Unknown prices
+remain unknown even when a model is enabled. See [cost provenance](pricing.md).
+
+A 201 response means a trace was persisted; inspect `outcome` (`answered`, `abstained`,
+or `error`) and `error_code`. The response contains the answer, claim-level citations,
+retrieved chunks with cosine scores/provenance, actual usage, cost estimates and tool
+receipts. Query history is paginated at `GET /api/knowledge-bases/{id}/queries`.
+`GET /api/query-traces/{trace_id}` reads one immutable observation. All routes require
+workspace membership; global administrators have no implicit workspace access.
+
+Each claim must cite a supplied chunk and a nonempty quote found in that chunk.
+An invented source or quote withholds the complete answer, records validation details
+and reports explicit abstention. Citation checks establish source/quote existence;
+they do not prove that the quote semantically entails the claim. Semantic evaluation
+is a separate layer. No matching evidence produces an abstention without a generation
+call in normal query mode.
+
+Agent mode permits document search, bounded arithmetic and metadata lookup. Every
+call records input, output, duration and failure state. A query can execute at most
+three tools and four completions; unknown tools and malformed arguments cannot run.
+Search and metadata access remain scoped to the same knowledge base. A cumulative
+24,000-token source budget excludes duplicate content: subsequent searches return
+references to chunks already supplied. Repeated provider-call IDs are rejected.
+
+Provider calls release DB transactions. Authorization is checked again for retrieval,
+metadata and final persistence; revocation during a query prevents returning its answer.
+Only configured provider adapters run in the product. Automated test fixtures simulate
+provider responses for contract testing and are not a live-model quality benchmark.

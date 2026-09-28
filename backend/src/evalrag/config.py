@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     generation_model: str = "gpt-4.1-mini"
+    additional_generation_models: list[str] = []
     provider_timeout_seconds: float = Field(default=45, ge=1, le=120)
     session_hours: int = Field(default=12, ge=1, le=168)
     upload_limit_bytes: int = Field(default=10_000_000, ge=1, le=50_000_000)

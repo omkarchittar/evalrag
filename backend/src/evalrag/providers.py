@@ -8,10 +8,11 @@ import httpx
 
 
 class ProviderError(RuntimeError):
-    def __init__(self, code: str, *, retryable: bool = False):
+    def __init__(self, code: str, *, retryable: bool = False, usage: dict | None = None):
         super().__init__(code)
         self.code = code
         self.retryable = retryable
+        self.usage = usage
 
 
 @dataclass(frozen=True)
@@ -65,7 +66,7 @@ class OpenAIEmbeddingProvider:
                     response = self._request(client, payload)
             else:
                 response = self._request(self.client, payload)
-        except (httpx.TimeoutException, httpx.NetworkError) as exc:
+        except httpx.TransportError as exc:
             raise ProviderError("provider_unavailable", retryable=True) from exc
         if not response.is_success:
             raise ProviderError(
@@ -74,7 +75,7 @@ class OpenAIEmbeddingProvider:
             )
         try:
             data = response.json()
-            if data.get("model") != self.model:
+            if not isinstance(data, dict) or data.get("model") != self.model:
                 raise ValueError("Embedding model mismatch")
             entries = sorted(data["data"], key=lambda item: item["index"])
             if [entry["index"] for entry in entries] != list(range(len(texts))):

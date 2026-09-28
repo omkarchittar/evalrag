@@ -15,14 +15,16 @@ benchmark/release package are still in progress.
 - Fixed-token and recursive chunking with Unicode-safe boundaries, capped at 2,000 chunks and 250,000 embedding tokens per document.
 - Checksum-idempotent ingestion and transactional pgvector indexing.
 - Validated OpenAI embedding adapter supporting small and large embedding models.
-- Citation source/quote checks and a bounded arithmetic tool.
+- Grounded query API with pgvector retrieval, structured cited claims, explicit abstention and immutable query history.
+- Bounded agent loop with document search, arithmetic and scoped metadata lookup; per-call receipts and cumulative context limits.
+- Actual model/token/latency observations with versioned, source-linked cost estimates and explicit unknown-usage handling.
 - Retrieval metrics, operational percentiles and directional regression comparisons.
 - Database-enforced immutability of experiment inputs and completed observations.
 - PostgreSQL job queue with SKIP LOCKED claims, expiring leases, backoff and stale-worker fencing.
 - FastAPI liveness/readiness, structured request logs, correlation IDs and Prometheus metrics.
 - Alembic migrations, reproducible dependency locks, non-root Dockerfile and backend CI definition.
 
-Current local verification: **103 tests pass against PostgreSQL 17**. This count includes unit, HTTP and database tests; it is not a claim that
+Current local verification: **159 tests pass against PostgreSQL 17**. This count includes unit, HTTP and database tests; it is not a claim that
 the final PRD benchmark/scenario requirements have been completed. Live provider calls
 and Docker image builds have not yet been verified in this environment.
 
@@ -116,7 +118,7 @@ adapter contracts. They are not fabricated live model quality results.
 
 ## Next milestones
 
-Grounded generation and full tool loop; dataset management and immutable evaluation execution; benchmark corpus; Next.js frontend; browser tests; release pipeline; screenshots and demo GIF.
+Dataset management and immutable evaluation execution; benchmark corpus; Next.js frontend; browser tests; release pipeline; screenshots and demo GIF.
 
 The final release will include measured benchmarks, an interactive frontend,
 architecture/state diagrams, screenshots, a demo GIF, deployment instructions and

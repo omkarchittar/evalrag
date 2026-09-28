@@ -40,10 +40,10 @@ adding intermediate approval gates. Record actual test results here, not intenti
 
 ### 3. Grounded query and tools
 
-- [ ] Deliverable: `rag.py, tools.py, api.py`.
-- [ ] Behavior evidence: Unsupported citations and arithmetic attacks fail closed; abstention is explicit; query trace stores actual usage/latency/cost.
-- [ ] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
-- [ ] Commit the verified increment and record evidence below.
+- [x] Deliverable: `rag.py, tools.py, api.py`.
+- [x] Behavior evidence: Unsupported citations and arithmetic attacks fail closed; abstention is explicit; query trace stores actual usage/latency/cost.
+- [x] Run the backend suite (`.venv/bin/pytest`) and relevant integration/browser checks.
+- [x] Commit the verified increment and record evidence below.
 
 ### 4. Evaluation and regression
 
@@ -92,3 +92,15 @@ adding intermediate approval gates. Record actual test results here, not intenti
 - Independent review found three concrete issues across the increment (blank evidence quotes, bootstrap validation secret exposure, PDF upload-size mismatch). Regression tests reproduced all three; fixes approved on re-review with no outstanding findings.
 - Compose now starts the worker and shares backend configuration. FlowPilot dependency locks include psutil. YAML and environment references validated, but actual Docker builds/startup remain unverified because Docker is unavailable.
 - These test totals are not live provider quality metrics or the final PRD benchmark corpus. Frontend, complete benchmark artifacts and release presentation remain outstanding. No remote push or deployment performed.
+
+### Grounded query and tools checkpoint — 2026-09-28
+
+- Added exact cosine retrieval scoped to knowledge base/index/ready documents, with provenance, threshold/top-k settings and optional fixed-corpus filtering for evaluation.
+- Added strict-schema generation, cited claim validation and explicit abstention. Source/quote validity is explicitly separate from semantic entailment, which remains for the evaluation layer.
+- Added an allowlisted agent loop for search, calculator and metadata, bounded to three tools/four completions. Repeated chunk contents are sent once within the cumulative 24,000-token evidence budget.
+- Query API and trace/history reads enforce workspace membership; provider IO releases database transactions; revocation is rechecked before results are persisted/returned.
+- Actual provider identity, prompt version, cached/input/output tokens, tool input/output/duration, latency, quote diagnostics and dated price metadata persist in immutable query traces. Unknown pricing/usage remains explicit; reported usage on rejected completions is retained.
+- Independent review found malformed nested payload handling, protocol-disconnect classification, repeated-context budget and partial-config default issues. All reproduced with regressions and fixed. Re-review approved; reviewer independently ran 40 targeted PostgreSQL tests.
+- Final suite for this increment: **159 tests passing**, no skipped PostgreSQL tests; Ruff and schema checks pass.
+- Native HTTP smoke with a controlled local provider verifies upload → separate worker → real pgvector → calculator loop → cited query → persisted history. This proves runtime wiring, not live model accuracy. Temporary database/server/provider removed afterward.
+- Next: dataset management, immutable evaluation snapshots/execution, semantic evaluation, regression comparisons and benchmark corpus; then full frontend and release requirements. No release or remote push yet.

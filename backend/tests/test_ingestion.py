@@ -240,3 +240,33 @@ def test_repeated_pdf_streams_cannot_amplify_parent_process_memory():
         assert peak < 25_000_000
     finally:
         tracemalloc.stop()
+
+
+def test_embedding_protocol_disconnect_has_retryable_safe_error():
+    def disconnect(request):
+        raise httpx.RemoteProtocolError("private transport message")
+
+    provider = OpenAIEmbeddingProvider(
+        "test",
+        model="text-embedding-3-small",
+        dimensions=3,
+        client=httpx.Client(transport=httpx.MockTransport(disconnect)),
+    )
+    with pytest.raises(ProviderError) as error:
+        provider.embed(["policy"])
+    assert error.value.code == "provider_unavailable" and error.value.retryable
+
+
+@pytest.mark.parametrize("payload", [None, [], "not an object"])
+def test_embedding_nonobject_json_is_a_provider_error(payload):
+    with embedding_client(
+        lambda _: httpx.Response(
+            200, content=json.dumps(payload), headers={"Content-Type": "application/json"}
+        )
+    ) as client:
+        model = OpenAIEmbeddingProvider(
+            "test", model="text-embedding-3-small", dimensions=3, client=client
+        )
+        with pytest.raises(ProviderError) as error:
+            model.embed(["policy"])
+        assert error.value.code == "invalid_embedding_response"
